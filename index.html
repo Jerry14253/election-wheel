@@ -129,7 +129,7 @@ function tone(freq, start, len, vol, type) {
   o.connect(g).connect(a.destination);
   o.start(t); o.stop(t + len + 0.02);
 }
-// Shared white-noise buffer for clicks, whoosh and applause
+// Shared white-noise buffer for clicks and whoosh
 let noiseBuf = null;
 function noise(a) {
   if (!noiseBuf) {
@@ -182,32 +182,26 @@ function startSound() {
   s.connect(f).connect(g).connect(a.destination);
   s.start(t); s.stop(t + 0.65);
 }
-// Brassy "ta-da" chord
-function brass(a, freq, t, len, vol) {
-  const f = a.createBiquadFilter(), g = a.createGain();
-  f.type = 'lowpass'; f.Q.value = 1;
-  f.frequency.setValueAtTime(600, t);
-  f.frequency.exponentialRampToValueAtTime(3500, t + 0.06);
-  f.frequency.exponentialRampToValueAtTime(1400, t + len);
-  g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(vol, t + 0.03);
-  g.gain.setValueAtTime(vol, t + len * 0.6);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-  f.connect(g).connect(a.destination);
-  [-6, 6].forEach(det => {
-    const o = a.createOscillator();
-    o.type = 'sawtooth'; o.frequency.setValueAtTime(freq, t); o.detune.value = det;
-    o.connect(f); o.start(t); o.stop(t + len + 0.05);
+// Bright bell "ding": a pure tone plus the softer overtones a struck chime has
+function bell(a, freq, t, len, vol) {
+  [[1, 1], [2.76, 0.35], [5.4, 0.12]].forEach(([mult, amt]) => {
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(freq * mult, t);
+    const l = len / mult ** 0.5;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol * amt, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + l);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + l + 0.05);
   });
 }
+// Winner chime: a quick rising sparkle that rings out on the top note
 function revealSound() {
   const a = audio(); if (!a) return;
   const t = a.currentTime;
-  brass(a, 523.25, t, 0.16, 0.07);          // ta-
-  brass(a, 523.25, t + 0.15, 0.7, 0.06);    // -da chord
-  brass(a, 659.25, t + 0.15, 0.7, 0.05);
-  brass(a, 783.99, t + 0.15, 0.7, 0.05);
-  brass(a, 261.63, t + 0.15, 0.7, 0.05);
+  [783.99, 987.77, 1174.66].forEach((f, i) => bell(a, f, t + i * 0.07, 0.5, 0.12));
+  bell(a, 1567.98, t + 0.21, 1.6, 0.16);
+  bell(a, 783.99, t + 0.21, 1.6, 0.07);
 }
 const haze = document.getElementById('haze'), big = document.getElementById('big');
 const css = getComputedStyle(document.documentElement);
