@@ -200,15 +200,6 @@ function brass(a, freq, t, len, vol) {
     o.connect(f); o.start(t); o.stop(t + len + 0.05);
   });
 }
-// Crowd applause: many small randomly timed claps that swell and fade
-function applause(a, t0, dur) {
-  for (let i = 0; i < 140; i++) {
-    const p = Math.random();
-    const t = t0 + p * dur;
-    const env = p < 0.15 ? p / 0.15 : 1 - (p - 0.15) / 0.85;
-    burst(a, t, 0.04 + Math.random() * 0.04, 0.05 + env * 0.12, 'bandpass', 900 + Math.random() * 1800, 1.4);
-  }
-}
 function revealSound() {
   const a = audio(); if (!a) return;
   const t = a.currentTime;
@@ -217,7 +208,6 @@ function revealSound() {
   brass(a, 659.25, t + 0.15, 0.7, 0.05);
   brass(a, 783.99, t + 0.15, 0.7, 0.05);
   brass(a, 261.63, t + 0.15, 0.7, 0.05);
-  applause(a, t + 0.25, 2.6);
 }
 const haze = document.getElementById('haze'), big = document.getElementById('big');
 const css = getComputedStyle(document.documentElement);
