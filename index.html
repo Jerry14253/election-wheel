@@ -7,59 +7,63 @@
 <title>Election Year Wheel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700&family=Unbounded:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap">
 <style>
-/* Layout: a single dark screen, the wheel centered and sized to the viewport; click the wheel to spin */
+/* Layout: a single navy screen, the wheel centered and sized to the viewport; click the wheel to spin */
 :root {
-  --bg: #1d2128;
-  --slice-a: #2c313b;
-  --slice-b: #4a5160;
-  --rim: #6b7284;
-  --display: "Unbounded", "Avenir Next", system-ui, sans-serif;
-  --year: #e9e6dc;
-  --hit: #a9c1e0;
-  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --bg: #0c1838;
+  --slice-a: #b8243a;
+  --slice-b: #24479c;
+  --rim: #ffffff;
+  --pointer: #f2b705;
+  --display: "Oswald", "Arial Narrow", system-ui, sans-serif;
+  --year: #ffffff;
+  --hit: #ffffff;
+  --mono: "Oswald", "Arial Narrow", system-ui, sans-serif;
   color-scheme: dark;
 }
 html, body { height: 100%; }
-body { background: var(--bg); color: var(--year); font-family: var(--mono); overflow: hidden; }
+body {
+  background: var(--bg); color: var(--year); font-family: var(--mono); overflow: hidden;
+}
 .screen { height: 100%; display: grid; grid-template-rows: auto 1fr; justify-items: center; align-items: center; gap: 2vh; padding-inline: 16px; padding-block: 3vh; box-sizing: border-box; }
-h1 { margin: 0; font-family: var(--display); font-weight: 500; font-size: clamp(22px, 4vh, 44px); letter-spacing: .04em; text-transform: uppercase; color: var(--year); }
-.wheel-box { position: relative; width: min(80vh, 88vw, 880px); box-shadow: 0 0 0 6px var(--rim), 0 0 60px rgba(169,193,224,.14); border-radius: 50%; aspect-ratio: 1; max-width: 100%; }
+h1 { margin: 0; font-family: var(--display); font-weight: 600; font-size: clamp(24px, 4.5vh, 48px); letter-spacing: .03em; text-transform: uppercase; color: var(--year); text-align: center; }
+.wheel-box { position: relative; width: min(80vh, 88vw, 880px); border-radius: 50%; aspect-ratio: 1; max-width: 100%; }
 canvas { width: 100%; height: 100%; display: block; cursor: pointer; border-radius: 50%; }
 canvas:focus-visible { outline: 2px solid var(--hit); outline-offset: 6px; }
 .pointer {
   position: absolute; left: 50%; top: -10px; transform: translateX(-50%);
   width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
-  border-top: 28px solid var(--year); pointer-events: none;
+  border-top: 30px solid var(--pointer); pointer-events: none;
   transform-origin: 50% 0; transition: transform .08s ease-out; z-index: 2;
 }
 .pointer.tick { transform: translateX(-50%) rotate(-18deg); transition: none; }
 .hub {
   position: absolute; inset: 0; margin: auto; width: 20%; height: 20%; border-radius: 50%;
-  background: var(--bg); border: 2px solid var(--rim); display: grid; place-items: center;
+  background: var(--bg); border: 3px solid var(--rim); display: grid; place-items: center;
   pointer-events: none;
 }
 .haze {
   position: fixed; inset: 0; display: grid; place-items: center; cursor: pointer; z-index: 10;
-  background: rgba(6, 7, 9, .82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  background: rgba(8, 16, 40, .84); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   opacity: 0; pointer-events: none; transition: opacity .5s ease;
 }
 .haze.show { opacity: 1; pointer-events: auto; }
 .haze span {
   font-family: var(--display); font-weight: 700;
-  font-size: clamp(100px, 24vmin, 300px); line-height: 1; letter-spacing: .02em; color: #c3d3ea;
-  font-variant-numeric: tabular-nums; text-shadow: 0 0 40px rgba(169,193,224,.25);
+  font-size: clamp(110px, 28vmin, 340px); line-height: 1; letter-spacing: .02em; color: #ffffff;
+  font-variant-numeric: tabular-nums; 
   transform: scale(.85); transition: transform .6s cubic-bezier(.2,.8,.2,1);
 }
 .haze.show span { transform: scale(1); }
 @media (prefers-reduced-motion: reduce) { .haze, .haze span { transition: none; } }
 .mute {
   position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 20;
-  width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--rim); background: var(--slice-a);
+  width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--rim); background: var(--slice-b);
   color: var(--year); display: grid; place-items: center; cursor: pointer; padding: 0;
 }
-.mute:hover { background: var(--slice-b); }
+.mute:hover { background: var(--slice-a); }
+.confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; }
 .mute:focus-visible { outline: 2px solid var(--hit); outline-offset: 3px; }
 .mute svg { width: 20px; height: 20px; }
 .mute .off { display: none; }
@@ -79,6 +83,7 @@ canvas:focus-visible { outline: 2px solid var(--hit); outline-offset: 6px; }
   </div>
 </div>
 <div class="haze" id="haze" aria-live="assertive"><span id="big"></span></div>
+<canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
 <button class="mute" id="mute" type="button" aria-label="Mute sound" aria-pressed="false">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/>
@@ -124,12 +129,96 @@ function tone(freq, start, len, vol, type) {
   o.connect(g).connect(a.destination);
   o.start(t); o.stop(t + len + 0.02);
 }
-function tickSound() { tone(1500, 0, 0.035, 0.12, 'triangle'); tone(700, 0, 0.03, 0.06, 'square'); }
-function revealSound() {
-  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.09, 0.9, 0.14, 'sine'));
-  tone(130.81, 0, 1.2, 0.12, 'triangle');
+// Shared white-noise buffer for clicks, whoosh and applause
+let noiseBuf = null;
+function noise(a) {
+  if (!noiseBuf) {
+    noiseBuf = a.createBuffer(1, a.sampleRate * 2, a.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const s = a.createBufferSource();
+  s.buffer = noiseBuf;
+  return s;
 }
-function startSound() { tone(220, 0, 0.18, 0.1, 'sawtooth'); tone(330, 0.05, 0.18, 0.08, 'triangle'); }
+// Filtered noise burst: type/freq/q shape the filter, vol/len the envelope
+function burst(a, t, len, vol, type, freq, q) {
+  const s = noise(a), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = type; f.frequency.setValueAtTime(freq, t); f.Q.value = q;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  s.connect(f).connect(g).connect(a.destination);
+  s.start(t, Math.random() * 1.5); s.stop(t + len + 0.02);
+  return f;
+}
+// Plastic peg clicker: a sharp snap plus a short woody knock
+function tickSound() {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime, v = 0.85 + Math.random() * 0.3;
+  burst(a, t, 0.025, 0.5 * v, 'bandpass', 3200 + Math.random() * 600, 2.5);
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(1100, t);
+  o.frequency.exponentialRampToValueAtTime(380, t + 0.03);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.22 * v, t + 0.002);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+  o.connect(g).connect(a.destination);
+  o.start(t); o.stop(t + 0.06);
+}
+// Whoosh as the wheel is thrown
+function startSound() {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  const s = noise(a), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = 'bandpass'; f.Q.value = 1.2;
+  f.frequency.setValueAtTime(400, t);
+  f.frequency.exponentialRampToValueAtTime(2400, t + 0.25);
+  f.frequency.exponentialRampToValueAtTime(600, t + 0.6);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.35, t + 0.12);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+  s.connect(f).connect(g).connect(a.destination);
+  s.start(t); s.stop(t + 0.65);
+}
+// Brassy "ta-da" chord
+function brass(a, freq, t, len, vol) {
+  const f = a.createBiquadFilter(), g = a.createGain();
+  f.type = 'lowpass'; f.Q.value = 1;
+  f.frequency.setValueAtTime(600, t);
+  f.frequency.exponentialRampToValueAtTime(3500, t + 0.06);
+  f.frequency.exponentialRampToValueAtTime(1400, t + len);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.03);
+  g.gain.setValueAtTime(vol, t + len * 0.6);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  f.connect(g).connect(a.destination);
+  [-6, 6].forEach(det => {
+    const o = a.createOscillator();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(freq, t); o.detune.value = det;
+    o.connect(f); o.start(t); o.stop(t + len + 0.05);
+  });
+}
+// Crowd applause: many small randomly timed claps that swell and fade
+function applause(a, t0, dur) {
+  for (let i = 0; i < 140; i++) {
+    const p = Math.random();
+    const t = t0 + p * dur;
+    const env = p < 0.15 ? p / 0.15 : 1 - (p - 0.15) / 0.85;
+    burst(a, t, 0.04 + Math.random() * 0.04, 0.05 + env * 0.12, 'bandpass', 900 + Math.random() * 1800, 1.4);
+  }
+}
+function revealSound() {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime;
+  brass(a, 523.25, t, 0.16, 0.07);          // ta-
+  brass(a, 523.25, t + 0.15, 0.7, 0.06);    // -da chord
+  brass(a, 659.25, t + 0.15, 0.7, 0.05);
+  brass(a, 783.99, t + 0.15, 0.7, 0.05);
+  brass(a, 261.63, t + 0.15, 0.7, 0.05);
+  applause(a, t + 0.25, 2.6);
+}
 const haze = document.getElementById('haze'), big = document.getElementById('big');
 const css = getComputedStyle(document.documentElement);
 const C = k => css.getPropertyValue(k).trim();
@@ -145,14 +234,14 @@ function resize() {
 }
 
 function draw() {
-  const c = size / 2, r = c - 3;
+  const c = size / 2, r = c - 1;
   ctx.clearRect(0, 0, size, size);
   ctx.save();
   ctx.translate(c, c);
   ctx.rotate(rotation);
   const passing = spinning ? indexAtPointer() : -1;
-  const fontPx = Math.max(9, Math.min(19, size / 42));
-  ctx.font = `700 ${fontPx}px "JetBrains Mono", ui-monospace, monospace`;
+  const fontPx = Math.max(10, Math.min(22, size / 36));
+  ctx.font = `600 ${fontPx}px "Oswald", "Arial Narrow", sans-serif`;
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   for (let i = 0; i < N; i++) {
@@ -172,11 +261,6 @@ function draw() {
     ctx.fillText(YEARS[i], r - 14, 0);
     ctx.restore();
   }
-  ctx.beginPath();
-  ctx.arc(0, 0, r, 0, Math.PI * 2);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = C('--rim');
-  ctx.stroke();
   ctx.restore();
 }
 
@@ -191,8 +275,12 @@ function spin() {
   spinning = true; landed = -1;
   startSound();
   const start = rotation;
-  const target = start + Math.PI * 2 * (1 + Math.random());
-  const duration = reduce ? 600 : 8000 + Math.random() * 1500;
+  // Every spin launches at the same speed and slows the same way; only how far it travels
+  // (1.5 to 2.5 full turns) is random, so the landing spot is random but the feel is consistent.
+  const turns = 1.5 + Math.random();
+  const target = start + Math.PI * 2 * turns;
+  const LAUNCH = 0.55; // turns per second at release
+  const duration = reduce ? 600 : (2 * turns / LAUNCH) * 1000;
   const t0 = performance.now();
   const ease = t => 1 - Math.pow(1 - t, 2);
   function frame(now) {
@@ -213,7 +301,51 @@ function finish() {
   big.textContent = YEARS[landed];
   haze.classList.add('show');
   revealSound();
+  confetti();
   spinning = false;
+}
+
+// A small red, white and blue confetti burst; the canvas ignores clicks so nothing is blocked
+const confCanvas = document.getElementById('confetti'), cctx = confCanvas.getContext('2d');
+let confRun = 0;
+function confetti() {
+  if (reduce) return;
+  const dpr = window.devicePixelRatio || 1, w = innerWidth, h = innerHeight;
+  confCanvas.width = Math.round(w * dpr); confCanvas.height = Math.round(h * dpr);
+  cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const colors = ['#d22f45', '#ffffff', '#3d6ad6'];
+  const bits = Array.from({ length: 45 }, (_, i) => {
+    const ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.3;
+    const sp = 6 + Math.random() * 7;
+    return {
+      x: w / 2 + (Math.random() - 0.5) * 60, y: h / 2,
+      vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp,
+      rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
+      sw: 6 + Math.random() * 5, sh: 3 + Math.random() * 3,
+      c: colors[i % 3]
+    };
+  });
+  const run = ++confRun, t0 = performance.now(), life = 2600;
+  function step(now) {
+    if (run !== confRun) return;
+    const t = now - t0;
+    cctx.clearRect(0, 0, w, h);
+    if (t > life) return;
+    cctx.globalAlpha = t > life - 700 ? (life - t) / 700 : 1;
+    for (const b of bits) {
+      b.vy += 0.22; b.vx *= 0.985; b.vy *= 0.985;
+      b.x += b.vx; b.y += b.vy; b.rot += b.vr;
+      cctx.save();
+      cctx.translate(b.x, b.y); cctx.rotate(b.rot);
+      cctx.scale(1, Math.abs(Math.cos(b.rot * 2)) * 0.8 + 0.2);
+      cctx.fillStyle = b.c;
+      cctx.fillRect(-b.sw / 2, -b.sh / 2, b.sw, b.sh);
+      cctx.restore();
+    }
+    cctx.globalAlpha = 1;
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
 }
 
 function closeHaze() { haze.classList.remove('show'); }
